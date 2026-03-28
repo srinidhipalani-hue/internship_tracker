@@ -13,6 +13,7 @@ create table if not exists public.applications (
   resume text not null default '',
   applied_via text not null default '',
   referrals text not null default '',
+  interview_date date,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import LoginPage from "./LoginPage.jsx";
 import ConfigRequired from "./ConfigRequired.jsx";
+import SmartCalendar from "./SmartCalendar.jsx";
 import { getSupabase, isSupabaseConfigured } from "./supabaseClient.js";
 import {
   STATUSES,
@@ -154,7 +155,7 @@ function DocsCell({ coverLetter, resume }) {
   );
 }
 
-const TABLE_COLS = 11;
+const TABLE_COLS = 12;
 
 const STATUS_DASHBOARD_STYLE = {
   Applied:
@@ -220,6 +221,7 @@ export default function App() {
   const [appliedVia, setAppliedVia] = useState("");
   const [importance, setImportance] = useState("MEDIUM");
   const [referrals, setReferrals] = useState("");
+  const [interviewDate, setInterviewDate] = useState("");
 
   const [editForm, setEditForm] = useState(null);
   const [editSaving, setEditSaving] = useState(false);
@@ -348,6 +350,7 @@ export default function App() {
     setAppliedVia("");
     setImportance("MEDIUM");
     setReferrals("");
+    setInterviewDate("");
   }
 
   async function handleAdd(e) {
@@ -367,6 +370,7 @@ export default function App() {
         appliedVia,
         importance,
         referrals,
+        interviewDate,
       });
       const { error } = await supabase.from("applications").insert(row);
       if (error) throw new Error(error.message);
@@ -411,6 +415,7 @@ export default function App() {
       referrals: a.referrals ?? "",
       coverLetter: a.coverLetter ?? "",
       resume: a.resume ?? "",
+      interviewDate: a.interviewDate ?? "",
     });
   }
 
@@ -432,6 +437,7 @@ export default function App() {
       referrals: ref,
       coverLetter: cl,
       resume: rs,
+      interviewDate: iv,
     } = editForm;
     if (!c.trim() || !r.trim() || !d.trim()) return;
     setEditSaving(true);
@@ -449,6 +455,7 @@ export default function App() {
         referrals: ref,
         coverLetter: cl,
         resume: rs,
+        interviewDate: iv,
       });
       const { error } = await supabase.from("applications").update(patch).eq("id", id);
       if (error) throw new Error(error.message);
@@ -561,6 +568,7 @@ export default function App() {
     setEditForm(null);
     setActionMenu(null);
     setError(null);
+    resetForm();
   }
 
   if (!isSupabaseConfigured()) {
@@ -600,7 +608,7 @@ export default function App() {
       </div>
 
       <nav className="sticky top-0 z-30 border-b border-white/50 bg-white/70 shadow-sm shadow-violet-900/[0.04] backdrop-blur-xl dark:border-slate-700/60 dark:bg-slate-950/80 dark:shadow-black/30">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-6 gap-y-2 px-4 py-3.5 sm:gap-x-10">
+        <div className="mx-auto flex max-w-[min(92rem,100%)] flex-wrap items-center justify-center gap-x-6 gap-y-2 px-4 py-3.5 sm:gap-x-10">
           <span className="font-display text-lg font-bold tracking-tight gradient-text">Trakr</span>
           <span className="hidden h-4 w-px bg-gradient-to-b from-transparent via-slate-300 to-transparent dark:via-slate-600 sm:block" />
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-sm font-semibold text-slate-700 dark:text-slate-200">
@@ -621,6 +629,12 @@ export default function App() {
               className="rounded-md px-1 transition hover:text-violet-700 dark:hover:text-violet-400"
             >
               Your list
+            </a>
+            <a
+              href="#smart-calendar"
+              className="rounded-md px-1 transition hover:text-cyan-700 dark:hover:text-cyan-400"
+            >
+              Calendar
             </a>
           </div>
           <span
@@ -660,7 +674,16 @@ export default function App() {
         </div>
       </nav>
 
-      <header className="relative z-10 mx-auto max-w-3xl px-4 pb-14 pt-12 text-center sm:pb-16 sm:pt-16">
+      <div className="relative z-10 mx-auto max-w-[min(92rem,100%)] px-4 pb-20 pt-2">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-8">
+          <aside
+            id="smart-calendar"
+            className="w-full shrink-0 lg:sticky lg:top-24 lg:z-20 lg:w-80 xl:w-[22rem]"
+          >
+            <SmartCalendar applications={applications} />
+          </aside>
+          <div className="min-w-0 flex-1 space-y-12">
+      <header className="relative pb-14 pt-12 text-center sm:pb-16 sm:pt-16">
         <p className="animate-float-soft inline-flex rounded-full border border-violet-200/90 bg-white/70 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-violet-800 shadow-md shadow-violet-500/10 dark:border-violet-500/40 dark:bg-violet-950/50 dark:text-violet-200 dark:shadow-violet-900/40">
           Internship pipeline
         </p>
@@ -690,7 +713,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto max-w-7xl space-y-12 px-4 pb-20 pt-2">
+      <main className="space-y-12">
         {rowMenu}
         {error && (
           <div
@@ -760,6 +783,17 @@ export default function App() {
                     />
                   </label>
                 </div>
+                <label className="block">
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                    Interview / OA / deadline (optional)
+                  </span>
+                  <input
+                    type="date"
+                    className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800/90 dark:text-slate-100"
+                    value={editForm.interviewDate ?? ""}
+                    onChange={(e) => setEditForm({ ...editForm, interviewDate: e.target.value })}
+                  />
+                </label>
                 <label className="block">
                   <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Importance</span>
                   <select
@@ -986,6 +1020,18 @@ export default function App() {
               />
             </label>
 
+            <label className="block max-w-xs">
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                Interview / OA / deadline (optional)
+              </span>
+              <input
+                type="date"
+                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30 dark:border-slate-600 dark:bg-slate-800/90 dark:text-slate-100"
+                value={interviewDate}
+                onChange={(e) => setInterviewDate(e.target.value)}
+              />
+            </label>
+
             <div className="grid sm:grid-cols-2 gap-3">
               <label className="block">
                 <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Cover letter (link or notes)</span>
@@ -1019,8 +1065,8 @@ export default function App() {
               </button>
               <p className="text-xs text-slate-600 dark:text-slate-400">
                 Date applied defaults to today. Use{" "}
-                <strong className="font-bold text-slate-800 dark:text-slate-100">Edit</strong> on a row to fix
-                links or referrals if something didn’t save — keep the API server running on port 3001.
+                <strong className="font-bold text-slate-800 dark:text-slate-100">Edit</strong> on a row to change
+                dates, links, referrals, or milestones.
               </p>
             </div>
           </form>
@@ -1096,6 +1142,9 @@ export default function App() {
                   <th className="px-3 py-3 font-semibold w-[9%]">Role</th>
                   <th className="px-3 py-3 font-semibold w-[7%]">Status</th>
                   <th className="px-3 py-3 font-semibold w-[7%]">Date</th>
+                  <th className="px-3 py-3 font-semibold w-[7%]" title="Interview, OA, or application deadline">
+                    Milestone
+                  </th>
                   <th className="px-3 py-3 font-semibold w-[7%]">Importance</th>
                   <th className="px-3 py-3 font-semibold w-[6%]" title="From status + timing">
                     Auto
@@ -1143,6 +1192,7 @@ export default function App() {
                     const refText = String(a.referrals ?? "").trim();
                     return (
                       <tr
+                        id={`app-row-${a.id}`}
                         key={a.id}
                         className={`border-t border-slate-100 dark:border-slate-700/80 ${rowAccentClass(a.importance, stale)} align-top`}
                       >
@@ -1157,6 +1207,9 @@ export default function App() {
                         </td>
                         <td className="whitespace-nowrap px-3 py-3 tabular-nums text-slate-600 dark:text-slate-400">
                           {a.dateApplied}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-3 tabular-nums text-slate-600 dark:text-slate-400">
+                          {a.interviewDate ? a.interviewDate : "—"}
                         </td>
                         <td className="px-3 py-3">
                           <span
@@ -1218,7 +1271,7 @@ export default function App() {
         </Reveal>
       </main>
 
-      <footer className="relative z-10 mx-auto max-w-3xl px-4 pb-14 pt-6 text-center">
+      <footer className="relative mx-auto max-w-3xl pb-14 pt-6 text-center">
         <div className="rounded-2xl border border-white/70 bg-white/50 px-8 py-6 shadow-lg shadow-violet-900/[0.06] backdrop-blur-md dark:border-slate-600/60 dark:bg-slate-900/55 dark:shadow-black/30">
           <p className="font-display text-base font-bold gradient-text">Trakr</p>
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
@@ -1226,6 +1279,9 @@ export default function App() {
           </p>
         </div>
       </footer>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -61,6 +61,10 @@ export function normalizeApplication(raw) {
   const nextAction = calculateNextAction(raw.status);
   return {
     ...raw,
+    interviewDate:
+      typeof raw.interviewDate === "string" && raw.interviewDate.trim()
+        ? raw.interviewDate.trim()
+        : "",
     coverLetter: typeof raw.coverLetter === "string" ? raw.coverLetter : "",
     resume: typeof raw.resume === "string" ? raw.resume : "",
     appliedVia: typeof raw.appliedVia === "string" ? raw.appliedVia.trim() : "",
@@ -92,6 +96,7 @@ export function rowToApp(row) {
     resume: row.resume ?? "",
     appliedVia: row.applied_via ?? "",
     referrals: row.referrals ?? "",
+    interviewDate: row.interview_date ? String(row.interview_date).slice(0, 10) : "",
   });
 }
 
@@ -113,6 +118,7 @@ export function buildNewRow(userId, fields) {
     resume: String(fields.resume ?? ""),
     applied_via: String(fields.appliedVia ?? "").trim(),
     referrals: String(fields.referrals ?? "").trim(),
+    interview_date: fields.interviewDate?.trim() || null,
   };
 }
 
@@ -127,5 +133,6 @@ export function buildUpdateRow(fields) {
     resume: String(fields.resume ?? ""),
     applied_via: String(fields.appliedVia ?? "").trim(),
     referrals: String(fields.referrals ?? "").trim(),
+    interview_date: fields.interviewDate?.trim() || null,
   };
 }
