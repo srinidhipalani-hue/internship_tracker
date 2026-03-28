@@ -1134,26 +1134,32 @@ export default function App() {
               pop for follow-up.
             </p>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full table-fixed text-left text-sm">
+          <div className="overflow-x-auto rounded-b-2xl">
+            <table className="w-full min-w-[76rem] table-auto border-separate border-spacing-0 text-left text-sm">
               <thead>
                 <tr className="bg-gradient-to-r from-violet-100/80 via-fuchsia-50/60 to-cyan-100/70 text-xs font-bold uppercase tracking-wide text-slate-700 dark:from-violet-950/90 dark:via-fuchsia-950/70 dark:to-cyan-950/80 dark:text-slate-200">
-                  <th className="px-3 py-3 font-semibold w-[10%]">Company</th>
-                  <th className="px-3 py-3 font-semibold w-[9%]">Role</th>
-                  <th className="px-3 py-3 font-semibold w-[7%]">Status</th>
-                  <th className="px-3 py-3 font-semibold w-[7%]">Date</th>
-                  <th className="px-3 py-3 font-semibold w-[7%]" title="Interview, OA, or application deadline">
+                  <th className="min-w-[8rem] px-3 py-3 font-semibold">Company</th>
+                  <th className="min-w-[7rem] px-3 py-3 font-semibold">Role</th>
+                  <th className="min-w-[5.5rem] whitespace-nowrap px-3 py-3 font-semibold">Status</th>
+                  <th className="min-w-[7rem] whitespace-nowrap px-3 py-3 font-semibold">Date</th>
+                  <th
+                    className="min-w-[7rem] whitespace-nowrap px-3 py-3 font-semibold"
+                    title="Interview, OA, or application deadline"
+                  >
                     Milestone
                   </th>
-                  <th className="px-3 py-3 font-semibold w-[7%]">Importance</th>
-                  <th className="px-3 py-3 font-semibold w-[6%]" title="From status + timing">
+                  <th className="min-w-[6.5rem] whitespace-nowrap px-3 py-3 font-semibold">Importance</th>
+                  <th
+                    className="min-w-[5rem] whitespace-nowrap px-3 py-3 font-semibold"
+                    title="From status + timing"
+                  >
                     Auto
                   </th>
-                  <th className="px-3 py-3 font-semibold w-[12%]">Applied via</th>
-                  <th className="px-3 py-3 font-semibold w-[11%]">Referrals</th>
-                  <th className="px-3 py-3 font-semibold w-[16%]">CL / Resume</th>
-                  <th className="px-3 py-3 font-semibold w-[9%]">Next action</th>
-                  <th className="px-3 py-3 font-semibold w-[4rem] text-right">
+                  <th className="min-w-[8rem] px-3 py-3 font-semibold">Applied via</th>
+                  <th className="min-w-[7rem] px-3 py-3 font-semibold">Referrals</th>
+                  <th className="min-w-[11rem] px-3 py-3 font-semibold">CL / Resume</th>
+                  <th className="min-w-[7.5rem] px-3 py-3 font-semibold">Next action</th>
+                  <th className="w-12 min-w-[3rem] shrink-0 px-2 py-3 text-right font-semibold">
                     <span className="sr-only">Actions</span>
                   </th>
                 </tr>
@@ -1211,16 +1217,16 @@ export default function App() {
                         <td className="whitespace-nowrap px-3 py-3 tabular-nums text-slate-600 dark:text-slate-400">
                           {a.interviewDate ? a.interviewDate : "—"}
                         </td>
-                        <td className="px-3 py-3">
+                        <td className="whitespace-nowrap px-3 py-3 align-top">
                           <span
-                            className={`inline-flex text-xs font-semibold px-2 py-0.5 rounded-full ring-1 ${importanceBadgeClass(a.importance)}`}
+                            className={`inline-flex shrink-0 whitespace-nowrap text-xs font-semibold px-2 py-0.5 rounded-full ring-1 ${importanceBadgeClass(a.importance)}`}
                           >
                             {a.importance}
                           </span>
                         </td>
-                        <td className="px-3 py-3">
+                        <td className="whitespace-nowrap px-3 py-3 align-top">
                           <span
-                            className={`inline-flex text-xs font-medium px-2 py-0.5 rounded-full ring-1 ${suggestedBadgeClass(a.suggestedPriority)}`}
+                            className={`inline-flex shrink-0 whitespace-nowrap text-xs font-medium px-2 py-0.5 rounded-full ring-1 ${suggestedBadgeClass(a.suggestedPriority)}`}
                           >
                             {a.suggestedPriority}
                           </span>
