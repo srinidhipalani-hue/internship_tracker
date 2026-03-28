@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import LoginPage from "./LoginPage.jsx";
 import ConfigRequired from "./ConfigRequired.jsx";
@@ -13,6 +13,7 @@ import {
   buildUpdateRow,
   nextStatus,
 } from "./applicationModel.js";
+import { isPdfFile, MAX_BYTES, uploadApplicationPdf } from "./applicationStorage.js";
 
 const STAGE_FLOW = {
   Applied: "OA",
@@ -87,6 +88,143 @@ function truncate(str, max = 80) {
   if (!str?.trim()) return null;
   const t = str.trim();
   return t.length <= max ? t : `${t.slice(0, max)}…`;
+}
+
+function PdfDropZone({ label, hint, file, onFileChange, disabled, onReject }) {
+  const inputId = useId();
+  const inputRef = useRef(null);
+  const [over, setOver] = useState(false);
+
+  useEffect(() => {
+    if (!file && inputRef.current) inputRef.current.value = "";
+  }, [file]);
+
+  function handleFileList(list) {
+    const f = list?.[0];
+    if (!f) {
+      onFileChange(null);
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
+    if (f.size > MAX_BYTES) {
+      onReject?.("Each PDF must be 10 MB or smaller.");
+      return;
+    }
+    if (!isPdfFile(f)) {
+      onReject?.("Please choose a PDF file (.pdf).");
+      return;
+    }
+    onFileChange(f);
+  }
+
+  const zoneClass = `mt-2 flex min-h-[7.5rem] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-4 text-center transition ${
+    disabled ? "cursor-not-allowed opacity-60" : ""
+  } ${
+    over
+      ? "border-violet-500 bg-violet-50/80 dark:border-violet-400 dark:bg-violet-950/40"
+      : "border-slate-200 bg-white/60 dark:border-slate-600 dark:bg-slate-800/40"
+  } ${
+    !file && !disabled
+      ? "cursor-pointer hover:border-violet-300 hover:bg-violet-50/40 dark:hover:border-violet-600 dark:hover:bg-violet-950/25"
+      : ""
+  }`;
+
+  return (
+    <div className="block">
+      <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{label}</span>
+      {hint ? <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">{hint}</p> : null}
+      <input
+        ref={inputRef}
+        id={inputId}
+        type="file"
+        accept="application/pdf,.pdf"
+        disabled={disabled}
+        className="sr-only"
+        onChange={(e) => handleFileList(e.target.files)}
+      />
+      {file ? (
+        <div
+          className={zoneClass}
+          onDragEnter={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!disabled) setOver(true);
+          }}
+          onDragLeave={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setOver(false);
+          }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setOver(false);
+            if (disabled) return;
+            handleFileList(e.dataTransfer.files);
+          }}
+        >
+          <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{file.name}</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">
+            {(file.size / 1024 / 1024).toFixed(2)} MB
+          </span>
+          <div className="mt-1 flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              disabled={disabled}
+              className="text-xs font-semibold text-violet-700 hover:underline dark:text-violet-400"
+              onClick={() => inputRef.current?.click()}
+            >
+              Replace PDF
+            </button>
+            <button
+              type="button"
+              disabled={disabled}
+              className="text-xs font-semibold text-red-600 hover:underline dark:text-red-400"
+              onClick={() => {
+                onFileChange(null);
+                if (inputRef.current) inputRef.current.value = "";
+              }}
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      ) : (
+        <label
+          htmlFor={inputId}
+          className={zoneClass}
+          onDragEnter={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!disabled) setOver(true);
+          }}
+          onDragLeave={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setOver(false);
+          }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setOver(false);
+            if (disabled) return;
+            handleFileList(e.dataTransfer.files);
+          }}
+        >
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Drop PDF here or click to browse</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">PDF only, max 10 MB</span>
+        </label>
+      )}
+    </div>
+  );
 }
 
 function DocLine({ label, value }) {
@@ -216,8 +354,8 @@ export default function App() {
   const [company, setCompany] = useState("");
   const [role, setRole] = useState("");
   const [status, setStatus] = useState("Applied");
-  const [coverLetter, setCoverLetter] = useState("");
-  const [resume, setResume] = useState("");
+  const [coverLetterFile, setCoverLetterFile] = useState(null);
+  const [resumeFile, setResumeFile] = useState(null);
   const [appliedVia, setAppliedVia] = useState("");
   const [importance, setImportance] = useState("MEDIUM");
   const [referrals, setReferrals] = useState("");
@@ -345,8 +483,8 @@ export default function App() {
     setCompany("");
     setRole("");
     setStatus("Applied");
-    setCoverLetter("");
-    setResume("");
+    setCoverLetterFile(null);
+    setResumeFile(null);
     setAppliedVia("");
     setImportance("MEDIUM");
     setReferrals("");
@@ -361,12 +499,20 @@ export default function App() {
     setSubmitting(true);
     setError(null);
     try {
+      let coverLetterUrl = "";
+      let resumeUrl = "";
+      if (coverLetterFile) {
+        coverLetterUrl = await uploadApplicationPdf(supabase, session.id, coverLetterFile, "cover-letter");
+      }
+      if (resumeFile) {
+        resumeUrl = await uploadApplicationPdf(supabase, session.id, resumeFile, "resume");
+      }
       const row = buildNewRow(session.id, {
         company,
         role,
         status,
-        coverLetter,
-        resume,
+        coverLetter: coverLetterUrl,
+        resume: resumeUrl,
         appliedVia,
         importance,
         referrals,
@@ -952,33 +1098,29 @@ export default function App() {
             <div className="rounded-xl border border-cyan-200/70 bg-gradient-to-r from-cyan-50/90 via-white/80 to-violet-50/60 px-4 py-3 text-sm leading-relaxed text-slate-700 shadow-sm dark:border-cyan-900/40 dark:from-cyan-950/40 dark:via-slate-900/50 dark:to-violet-950/30 dark:text-slate-200">
               <p className="font-semibold text-cyan-900 dark:text-cyan-200">Cover letter & resume first</p>
               <p className="mt-1 text-slate-600 dark:text-slate-300">
-                Add your cover letter and resume (paste text or links) at the top here. Trakr will parse them to
-                automatically fill in what it can about this application—company, role, and other details—so you
-                spend less time on data entry.
+                Upload PDFs for your cover letter and resume. Files are stored securely in your account. Trakr will
+                parse them to automatically fill in what it can—company, role, and other details—when parsing is
+                available.
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block">
-                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Cover letter (link, paste, or notes)</span>
-                <textarea
-                  className="mt-1 min-h-[100px] w-full resize-y rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30 dark:border-slate-600 dark:bg-slate-800/90 dark:text-slate-100"
-                  value={coverLetter}
-                  onChange={(e) => setCoverLetter(e.target.value)}
-                  placeholder="Paste the letter, or a Google Doc / PDF link, or short notes"
-                  rows={4}
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Resume (link, paste, or notes)</span>
-                <textarea
-                  className="mt-1 min-h-[100px] w-full resize-y rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30 dark:border-slate-600 dark:bg-slate-800/90 dark:text-slate-100"
-                  value={resume}
-                  onChange={(e) => setResume(e.target.value)}
-                  placeholder="Paste resume text, or link to PDF / Drive"
-                  rows={4}
-                />
-              </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <PdfDropZone
+                label="Cover letter (PDF)"
+                hint="Optional. Stored as a file; you can add without it."
+                file={coverLetterFile}
+                onFileChange={setCoverLetterFile}
+                disabled={submitting}
+                onReject={(msg) => setError(msg)}
+              />
+              <PdfDropZone
+                label="Resume (PDF)"
+                hint="Optional. Same as cover letter—upload when you have a PDF ready."
+                file={resumeFile}
+                onFileChange={setResumeFile}
+                disabled={submitting}
+                onReject={(msg) => setError(msg)}
+              />
             </div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -1073,9 +1215,13 @@ export default function App() {
                 {submitting ? "Adding…" : "Add application"}
               </button>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                Date applied defaults to today. Review and tweak any auto-filled fields before adding, or use{" "}
+                Date applied defaults to today. PDFs go to Supabase Storage (see{" "}
+                <span className="whitespace-nowrap font-mono text-[11px] text-slate-700 dark:text-slate-300">
+                  supabase/migration_storage_application_docs.sql
+                </span>{" "}
+                if uploads fail). Use{" "}
                 <strong className="font-bold text-slate-800 dark:text-slate-100">Edit</strong> on a row to change
-                dates, links, referrals, or milestones later.
+                document links or other fields.
               </p>
             </div>
           </form>
