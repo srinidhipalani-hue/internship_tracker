@@ -77,7 +77,47 @@ In **Vercel → Deployments**, confirm the latest commit is building. If Root Di
    - **`vite: not found` / `command not found`:** This repo keeps Vite in **dependencies** so installs always include the build tools. Pull latest `main`, redeploy.
    - **`Cannot find module '@rollup/rollup-linux-x64-gnu'`:** Lockfiles created on Windows can omit Rollup’s Linux binary. This repo lists it under **`optionalDependencies`** so Linux (Vercel) installs it while Windows skips it. Pull latest `main`, redeploy.
    - **Output directory:** must be **`dist`** (Vite default).
-3. **Environment variables** missing does **not** fail the build; they are only needed at **build time** for `VITE_*` if you want them baked in (recommended: set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` on Vercel for Production).
+3. **`VITE_SUPABASE_*` on Vercel:** Missing vars **do not** make the build fail, but the live site will show **“add Supabase environment variables”** because the bundle was built with empty values. Add both vars for **Production**, then **Redeploy**.
+
+---
+
+## Supabase checklist (everything in order)
+
+Use this if the app works on localhost but Vercel shows the configure screen, or auth/data fails.
+
+### A. Project & API keys
+
+1. **Supabase Dashboard** → your project → **Project Settings** (gear) → **API**.
+2. Copy **Project URL** → must be exactly `https://xxxxx.supabase.co` (no trailing slash).
+3. Copy **anon public** key under “Project API keys” — **not** the `service_role` secret.
+4. Names matter on Vercel: **`VITE_SUPABASE_URL`** and **`VITE_SUPABASE_ANON_KEY`** (all caps, `VITE_` prefix).
+
+### B. Vercel env + redeploy (required for production)
+
+1. **Vercel** → your project → **Settings** → **Environment Variables**.
+2. Add **`VITE_SUPABASE_URL`** and **`VITE_SUPABASE_ANON_KEY`**.
+3. Enable **Production** (and **Preview** if you open preview deployment URLs).
+4. Save, then **Deployments** → **⋯** on latest → **Redeploy** (so Vite rebuilds with the new values).  
+   *Adding variables after a successful deploy does not change an old deployment until you redeploy.*
+
+### C. Database table & security
+
+1. **Supabase** → **SQL Editor** → New query.
+2. Paste and run the full file **`supabase/schema.sql`** from this repo (creates `applications` + RLS).
+3. **Table Editor** → confirm **`public.applications`** exists.
+
+### D. Authentication
+
+1. **Authentication** → **Providers** → **Email** → enabled.
+2. For easiest signup: turn **off** “Confirm email” (or users must click the email link before login works).
+3. **Authentication** → **URL configuration**:
+   - **Site URL:** `https://your-app.vercel.app` (your real Vercel domain).
+   - **Redirect URLs:** add `https://your-app.vercel.app/**` and `http://localhost:5173/**` for local dev.
+
+### E. Quick test
+
+1. Open production URL → should see **Log in / Create account**, not the gray configure card.
+2. Create account → add one application → refresh → row still there.
 
 ---
 
