@@ -22,7 +22,13 @@ export default function ConfigRequired() {
           {`VITE_SUPABASE_URL=https://xxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbG...`}
         </pre>
-        <p className="mt-4 text-xs text-slate-500 dark:text-slate-500">
+        <p className="mt-4 text-left text-xs text-slate-500 dark:text-slate-500">
+          <strong className="text-slate-700 dark:text-slate-300">Still here after redeploy?</strong> In Vercel open each
+          variable — names must be exact, values have <strong>no</strong> quotes, and{" "}
+          <strong>Production</strong> must be checked. Redeploy again or use{" "}
+          <strong>Redeploy → clear build cache</strong>.
+        </p>
+        <p className="mt-3 text-xs text-slate-500 dark:text-slate-500">
           Run the SQL in <code className="rounded bg-slate-200/80 px-1 dark:bg-slate-700">supabase/schema.sql</code> in
           the Supabase SQL Editor, then create a user under Authentication or use the app sign-up form.
         </p>
