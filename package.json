@@ -1,0 +1,11 @@
+{
+  "name": "trakr",
+  "private": true,
+  "workspaces": ["client", "server"],
+  "scripts": {
+    "dev": "npm run dev -w trakr-client",
+    "build": "npm run build -w trakr-client",
+    "dev:server": "npm run dev -w trakr-api",
+    "start:server": "npm start -w trakr-api"
+  }
+}

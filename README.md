@@ -1,4 +1,4 @@
-# Frictionless Internship Tracker
+# Trakr
 
 Full-stack internship application tracker: React (Vite + Tailwind) frontend and Node.js + Express API with in-memory storage.
 
@@ -17,8 +17,9 @@ npm start
 API listens on **http://localhost:3001**.
 
 - `GET /applications` — list all applications (sorted by priority, then date)
-- `POST /applications` — body: `{ "company", "role", "status" }` (sets `dateApplied` to today; computes `priority` and `nextAction`)
-- `PATCH /applications/:id` — body: `{ "advance": true }` to move to the next stage, or `{ "status": "Interview" }` to set status explicitly
+- `POST /applications` — body: `{ "company", "role", "status", "importance"?, "coverLetter"?, "resume"?, "appliedVia"?, "referrals"? }` (`dateApplied` = today; `importance` defaults from status/timing if omitted; lists sort by **importance** then date)
+- `PATCH /applications/:id` — `{ "advance": true }` or `{ "status": "…" }`, and/or updates: `company`, `role`, `dateApplied` (`YYYY-MM-DD`), `importance`, `coverLetter`, `resume`, `appliedVia`, `referrals`
+- `DELETE /applications/:id` — remove a row (responds with `{ "ok": true }`)
 
 ## Run the frontend
 
