@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     "dev": "vite",
@@ -20,5 +20,8 @@
     "react-dom": "^18.3.1",
     "tailwindcss": "^3.4.14",
     "vite": "^5.4.10"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.60.0"
   }
 }

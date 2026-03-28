@@ -75,6 +75,7 @@ In **Vercel → Deployments**, confirm the latest commit is building. If Root Di
 2. Common fixes:
    - **Root Directory** = `client` (Settings → General).
    - **`vite: not found` / `command not found`:** This repo keeps Vite in **dependencies** so installs always include the build tools. Pull latest `main`, redeploy.
+   - **`Cannot find module '@rollup/rollup-linux-x64-gnu'`:** Lockfiles created on Windows can omit Rollup’s Linux binary. This repo lists it under **`optionalDependencies`** so Linux (Vercel) installs it while Windows skips it. Pull latest `main`, redeploy.
    - **Output directory:** must be **`dist`** (Vite default).
 3. **Environment variables** missing does **not** fail the build; they are only needed at **build time** for `VITE_*` if you want them baked in (recommended: set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` on Vercel for Production).
 
