@@ -69,6 +69,17 @@ In **Vercel → Deployments**, confirm the latest commit is building. If Root Di
 
 ---
 
+## If the Vercel build failed
+
+1. Open the failed deployment → **Building** log and scroll to the **red error** (often the last 20 lines).
+2. Common fixes:
+   - **Root Directory** = `client` (Settings → General).
+   - **`vite: not found` / `command not found`:** This repo keeps Vite in **dependencies** so installs always include the build tools. Pull latest `main`, redeploy.
+   - **Output directory:** must be **`dist`** (Vite default).
+3. **Environment variables** missing does **not** fail the build; they are only needed at **build time** for `VITE_*` if you want them baked in (recommended: set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` on Vercel for Production).
+
+---
+
 ## If your Supabase keys were committed
 
 If real keys ever appeared in **`.env.example`** or any tracked file, treat them as exposed: **Supabase → Project Settings → API → rotate the anon key** (or create a new project) and update Vercel + local `.env`.
