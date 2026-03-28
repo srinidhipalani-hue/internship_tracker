@@ -243,21 +243,27 @@ export default function App() {
       return;
     }
     const supabase = getSupabase();
+
+    /** Avoid new object references when nothing changed — stops load() effect from re-firing in a loop. */
+    function syncSessionFromSupabase(s) {
+      setSession((prev) => {
+        const next = s?.user ? { id: s.user.id, email: s.user.email ?? "" } : null;
+        if (prev?.id === next?.id && prev?.email === next?.email) return prev;
+        return next;
+      });
+    }
+
     supabase.auth
       .getSession()
       .then(({ data: { session: s } }) => {
-        setSession(
-          s?.user
-            ? { id: s.user.id, email: s.user.email ?? "" }
-            : null
-        );
+        syncSessionFromSupabase(s);
       })
       .finally(() => setBooting(false));
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s?.user ? { id: s.user.id, email: s.user.email ?? "" } : null);
+      syncSessionFromSupabase(s);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -287,15 +293,17 @@ export default function App() {
     }
   }, []);
 
+  const sessionUserId = session?.id ?? null;
+
   useEffect(() => {
-    if (!session) {
+    if (!sessionUserId) {
       setApplications([]);
       setLoading(false);
       return;
     }
     setLoading(true);
     load();
-  }, [session, load]);
+  }, [sessionUserId, load]);
 
   useEffect(() => {
     if (!actionMenu) return;
